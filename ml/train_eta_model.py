@@ -1,0 +1,50 @@
+﻿import json
+from datetime import datetime
+from pathlib import Path
+
+import joblib
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import train_test_split
+
+
+def main():
+    features_path = Path("artifacts/features.csv")
+    if not features_path.exists():
+        raise FileNotFoundError("No existe artifacts/features.csv. Ejecuta ml/build_features.py")
+
+    df = pd.read_csv(features_path)
+    x = df[["distance_km", "weight_kg", "hour", "day_of_week"]]
+    y = df["delivery_minutes"]
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+    model = RandomForestRegressor(
+        n_estimators=300,
+        max_depth=18,
+        random_state=42,
+        n_jobs=-1,
+    )
+    model.fit(x_train, y_train)
+    preds = model.predict(x_test)
+    mae = mean_absolute_error(y_test, preds)
+
+    Path("artifacts").mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, "artifacts/eta_model.joblib")
+    print(f"Modelo ETA entrenado. MAE: {mae:.2f} minutos")
+
+    metadata_path = Path("artifacts/model_metadata.json")
+    metadata = {
+        "model_version": f"eta-rf-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+        "eta_mae_minutes": round(float(mae), 4),
+    }
+    if metadata_path.exists():
+        current = json.loads(metadata_path.read_text(encoding="utf-8"))
+        current.update(metadata)
+        metadata = current
+    metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+
+
+if __name__ == "__main__":
+    main()

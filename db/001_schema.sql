@@ -1,0 +1,46 @@
+﻿CREATE TABLE IF NOT EXISTS trucks (
+  id SERIAL PRIMARY KEY,
+  plate VARCHAR(20) UNIQUE NOT NULL,
+  capacity_kg DOUBLE PRECISION NOT NULL,
+  active BOOLEAN DEFAULT TRUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGSERIAL PRIMARY KEY,
+  created_at TIMESTAMP NOT NULL,
+  promised_at TIMESTAMP NOT NULL,
+  origin_lat DOUBLE PRECISION NOT NULL,
+  origin_lng DOUBLE PRECISION NOT NULL,
+  dest_lat DOUBLE PRECISION NOT NULL,
+  dest_lng DOUBLE PRECISION NOT NULL,
+  weight_kg DOUBLE PRECISION NOT NULL,
+  status VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS gps_events (
+  id BIGSERIAL PRIMARY KEY,
+  truck_id INT REFERENCES trucks(id),
+  event_time TIMESTAMP NOT NULL,
+  lat DOUBLE PRECISION NOT NULL,
+  lng DOUBLE PRECISION NOT NULL,
+  speed_kmh DOUBLE PRECISION,
+  fuel_level DOUBLE PRECISION
+);
+
+CREATE TABLE IF NOT EXISTS deliveries (
+  id BIGSERIAL PRIMARY KEY,
+  order_id BIGINT REFERENCES orders(id),
+  truck_id INT REFERENCES trucks(id),
+  assigned_at TIMESTAMP,
+  delivered_at TIMESTAMP,
+  delivery_minutes DOUBLE PRECISION
+);
+
+CREATE TABLE IF NOT EXISTS eta_predictions (
+  id BIGSERIAL PRIMARY KEY,
+  order_id BIGINT REFERENCES orders(id),
+  predicted_eta_minutes DOUBLE PRECISION NOT NULL,
+  late_risk DOUBLE PRECISION NOT NULL,
+  model_version VARCHAR(50),
+  predicted_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
