@@ -8,7 +8,10 @@ load_dotenv()
 
 
 def _normalized_database_url() -> str:
-    url = os.getenv("DATABASE_URL", "postgresql://postgres:Valeria2004@localhost/fleet_portfolio_ml")
+    url = os.getenv("DATABASE_URL", "").strip()
+    if not url:
+        raise RuntimeError("DATABASE_URL no esta definido. Configuralo en .env local o en Railway Variables.")
+
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql+psycopg2://", 1)
     if url.startswith("postgresql://") and "+psycopg2" not in url:
