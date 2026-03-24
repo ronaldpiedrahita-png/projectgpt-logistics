@@ -13,12 +13,17 @@ from api.schemas import (
     OrderCreate,
     OrderOut,
 )
-from db.database import SessionLocal
-from db.models import EtaPrediction, GPSEvent, Order
+from db.database import SessionLocal, engine
+from db.models import Base, EtaPrediction, GPSEvent, Order
 from ml.inference import predict_for_order
 from optimizer.run_optimizer import optimize_assignments
 
 app = FastAPI(title="Logistics Control Tower API", version="0.1.0")
+
+
+@app.on_event("startup")
+def startup_init_db() -> None:
+    Base.metadata.create_all(bind=engine)
 
 
 def get_db():
@@ -57,6 +62,7 @@ def optimize_routes(payload: OptimizeRequest, db: Session = Depends(get_db)):
     run_date = payload.date or datetime.utcnow()
     assignments = optimize_assignments(db=db, run_date=run_date, persist=payload.persist_assignments)
     return OptimizeResponse(total_assigned=len(assignments), assignments=assignments)
+
 
 @app.get("/orders/{order_id}/eta", response_model=ETAResponse)
 def get_order_eta(order_id: int, db: Session = Depends(get_db)):
