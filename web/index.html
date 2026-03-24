@@ -1,0 +1,111 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Control Tower Logistica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="bg-shape bg-shape-a" aria-hidden="true"></div>
+  <div class="bg-shape bg-shape-b" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="brand">CONTROL TOWER</div>
+    <div class="badge" id="healthBadge">API: verificando...</div>
+  </header>
+
+  <main class="container">
+    <section class="hero reveal">
+      <p class="eyebrow">Proyecto Data Science + MLOps</p>
+      <h1>Logistica Inteligente para Flotas y Delivery</h1>
+      <p class="subtitle">
+        Plataforma real con FastAPI, PostgreSQL, modelos de ETA y despliegue en Railway.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/docs" target="_blank" rel="noreferrer">Abrir Swagger</a>
+        <a class="btn btn-outline" href="/redoc" target="_blank" rel="noreferrer">Ver ReDoc</a>
+      </div>
+    </section>
+
+    <section class="stats-grid reveal delay-1" aria-label="metricas">
+      <article class="stat-card">
+        <h3>MAE ETA</h3>
+        <p class="stat-value">35.72 min</p>
+      </article>
+      <article class="stat-card">
+        <h3>AUC Atraso</h3>
+        <p class="stat-value">0.511</p>
+      </article>
+      <article class="stat-card">
+        <h3>Stack</h3>
+        <p class="stat-value">FastAPI + ML + Railway</p>
+      </article>
+    </section>
+
+    <section class="panel-grid reveal delay-2">
+      <article class="panel">
+        <h2>Crear Orden</h2>
+        <form id="orderForm" class="form-grid">
+          <label>Origen Lat
+            <input name="origin_lat" type="number" step="0.0001" value="4.7110" required />
+          </label>
+          <label>Origen Lng
+            <input name="origin_lng" type="number" step="0.0001" value="-74.0721" required />
+          </label>
+          <label>Destino Lat
+            <input name="dest_lat" type="number" step="0.0001" value="4.6486" required />
+          </label>
+          <label>Destino Lng
+            <input name="dest_lng" type="number" step="0.0001" value="-74.2479" required />
+          </label>
+          <label>Peso (kg)
+            <input name="weight_kg" type="number" step="1" value="250" min="1" required />
+          </label>
+          <button class="btn btn-primary" type="submit">Crear Orden</button>
+        </form>
+        <div class="result" id="orderResult">Sin orden creada.</div>
+      </article>
+
+      <article class="panel">
+        <h2>Consultar ETA</h2>
+        <form id="etaForm" class="form-grid">
+          <label>ID de Orden
+            <input name="order_id" id="orderIdInput" type="number" min="1" required />
+          </label>
+          <button class="btn btn-accent" type="submit">Calcular ETA</button>
+        </form>
+        <div class="result" id="etaResult">Sin prediccion.</div>
+      </article>
+    </section>
+
+    <section class="stack reveal delay-3">
+      <h2>Arquitectura del Proyecto</h2>
+      <div class="stack-cards">
+        <article>
+          <h3>Data Layer</h3>
+          <p>PostgreSQL para ordenes, GPS, entregas y predicciones.</p>
+        </article>
+        <article>
+          <h3>ML Layer</h3>
+          <p>Modelos ETA y riesgo de atraso entrenados sobre datos simulados.</p>
+        </article>
+        <article>
+          <h3>Ops Layer</h3>
+          <p>CI/CD, Docker y despliegue en Railway con endpoint publico.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Proyecto portfolio de Ronald Piedrahita</p>
+  </footer>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

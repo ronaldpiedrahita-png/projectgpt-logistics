@@ -9,8 +9,12 @@ load_dotenv()
 
 def _normalized_database_url() -> str:
     raw = os.getenv("DATABASE_URL", "").strip()
+    env = os.getenv("ENV", "development").lower().strip()
+
     if not raw:
-        raise RuntimeError("DATABASE_URL no esta definido. Configuralo en .env local o en Railway Variables.")
+        if env == "production":
+            raise RuntimeError("DATABASE_URL no esta definido en produccion.")
+        return "sqlite:///./artifacts/local_dev.db"
 
     # Soporta errores frecuentes al pegar variables en paneles de despliegue.
     if raw.upper().startswith("DATABASE_URL="):
@@ -20,7 +24,7 @@ def _normalized_database_url() -> str:
         raw = raw[1:-1].strip()
 
     if raw.startswith("${{") and raw.endswith("}}"):
-        raise RuntimeError("DATABASE_URL parece una referencia sin resolver (${ {...} }). Usa un valor literal o Add Reference correcto.")
+        raise RuntimeError("DATABASE_URL parece una referencia sin resolver (${ {...} }).")
 
     if raw.startswith("postgres://"):
         raw = raw.replace("postgres://", "postgresql+psycopg2://", 1)

@@ -1,7 +1,10 @@
 ﻿import os
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,6 +23,12 @@ from optimizer.run_optimizer import optimize_assignments
 
 app = FastAPI(title="Logistics Control Tower API", version="0.1.0")
 
+BASE_DIR = Path(__file__).resolve().parents[1]
+WEB_DIR = BASE_DIR / "web"
+
+if WEB_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
+
 
 @app.on_event("startup")
 def startup_init_db() -> None:
@@ -32,6 +41,14 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@app.get("/")
+def web_home():
+    index_file = WEB_DIR / "index.html"
+    if not index_file.exists():
+        raise HTTPException(status_code=404, detail="Frontend not found")
+    return FileResponse(index_file)
 
 
 @app.get("/health")
