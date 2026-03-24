@@ -3,109 +3,145 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Control Tower Logistica</title>
+  <title>Control Tower Logistics V2</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <div class="bg-shape bg-shape-a" aria-hidden="true"></div>
-  <div class="bg-shape bg-shape-b" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
 
-  <header class="site-header">
-    <div class="brand">CONTROL TOWER</div>
-    <div class="badge" id="healthBadge">API: verificando...</div>
+  <header class="topbar">
+    <div class="title-block">
+      <p class="kicker">Logistics Intelligence Platform</p>
+      <h1>Control Tower V2</h1>
+    </div>
+    <div class="topbar-actions">
+      <span class="health" id="healthBadge">API: checking...</span>
+      <a class="link-btn" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+    </div>
   </header>
 
-  <main class="container">
-    <section class="hero reveal">
-      <p class="eyebrow">Proyecto Data Science + MLOps</p>
-      <h1>Logistica Inteligente para Flotas y Delivery</h1>
-      <p class="subtitle">
-        Plataforma real con FastAPI, PostgreSQL, modelos de ETA y despliegue en Railway.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/docs" target="_blank" rel="noreferrer">Abrir Swagger</a>
-        <a class="btn btn-outline" href="/redoc" target="_blank" rel="noreferrer">Ver ReDoc</a>
+  <main class="layout">
+    <section class="hero card reveal">
+      <div>
+        <h2>Operacion en tiempo real para flota y delivery</h2>
+        <p>
+          Dashboard de produccion con KPIs, mapa de ordenes, actividad diaria y panel operativo conectado a FastAPI.
+        </p>
+      </div>
+      <div class="hero-badges">
+        <span>Railway</span>
+        <span>FastAPI</span>
+        <span>PostgreSQL</span>
+        <span>ML ETA</span>
       </div>
     </section>
 
-    <section class="stats-grid reveal delay-1" aria-label="metricas">
-      <article class="stat-card">
-        <h3>MAE ETA</h3>
-        <p class="stat-value">35.72 min</p>
+    <section class="kpi-grid reveal delay-1">
+      <article class="kpi card">
+        <p class="label">Total Ordenes</p>
+        <p class="value" id="kpiTotalOrders">-</p>
       </article>
-      <article class="stat-card">
-        <h3>AUC Atraso</h3>
-        <p class="stat-value">0.511</p>
+      <article class="kpi card">
+        <p class="label">Camiones Activos</p>
+        <p class="value" id="kpiActiveTrucks">-</p>
       </article>
-      <article class="stat-card">
-        <h3>Stack</h3>
-        <p class="stat-value">FastAPI + ML + Railway</p>
+      <article class="kpi card">
+        <p class="label">ETA Promedio</p>
+        <p class="value" id="kpiAvgEta">-</p>
+      </article>
+      <article class="kpi card">
+        <p class="label">On-Time Rate</p>
+        <p class="value" id="kpiOnTime">-</p>
       </article>
     </section>
 
-    <section class="panel-grid reveal delay-2">
-      <article class="panel">
-        <h2>Crear Orden</h2>
+    <section class="viz-grid reveal delay-2">
+      <article class="card map-card">
+        <div class="card-header">
+          <h3>Mapa de Ordenes Recientes</h3>
+          <button class="ghost-btn" id="btnRefreshMap">Refrescar</button>
+        </div>
+        <div id="map"></div>
+      </article>
+
+      <article class="card chart-card">
+        <div class="card-header">
+          <h3>Actividad Ultimos 7 Dias</h3>
+          <button class="ghost-btn" id="btnRefreshActivity">Refrescar</button>
+        </div>
+        <canvas id="activityChart" height="250"></canvas>
+      </article>
+    </section>
+
+    <section class="ops-grid reveal delay-3">
+      <article class="card">
+        <h3>Crear Orden</h3>
         <form id="orderForm" class="form-grid">
-          <label>Origen Lat
-            <input name="origin_lat" type="number" step="0.0001" value="4.7110" required />
-          </label>
-          <label>Origen Lng
-            <input name="origin_lng" type="number" step="0.0001" value="-74.0721" required />
-          </label>
-          <label>Destino Lat
-            <input name="dest_lat" type="number" step="0.0001" value="4.6486" required />
-          </label>
-          <label>Destino Lng
-            <input name="dest_lng" type="number" step="0.0001" value="-74.2479" required />
-          </label>
-          <label>Peso (kg)
-            <input name="weight_kg" type="number" step="1" value="250" min="1" required />
-          </label>
-          <button class="btn btn-primary" type="submit">Crear Orden</button>
+          <label>Origen Lat <input name="origin_lat" type="number" step="0.0001" value="4.7110" required /></label>
+          <label>Origen Lng <input name="origin_lng" type="number" step="0.0001" value="-74.0721" required /></label>
+          <label>Destino Lat <input name="dest_lat" type="number" step="0.0001" value="4.6486" required /></label>
+          <label>Destino Lng <input name="dest_lng" type="number" step="0.0001" value="-74.2479" required /></label>
+          <label>Peso kg <input name="weight_kg" type="number" step="1" value="250" min="1" required /></label>
+          <button class="primary-btn" type="submit">Crear Orden</button>
         </form>
-        <div class="result" id="orderResult">Sin orden creada.</div>
+        <pre class="result" id="orderResult">Aun no hay orden creada.</pre>
       </article>
 
-      <article class="panel">
-        <h2>Consultar ETA</h2>
+      <article class="card">
+        <h3>Prediccion ETA</h3>
         <form id="etaForm" class="form-grid">
-          <label>ID de Orden
-            <input name="order_id" id="orderIdInput" type="number" min="1" required />
-          </label>
-          <button class="btn btn-accent" type="submit">Calcular ETA</button>
+          <label>Order ID <input id="orderIdInput" name="order_id" type="number" min="1" required /></label>
+          <button class="accent-btn" type="submit">Consultar ETA</button>
         </form>
-        <div class="result" id="etaResult">Sin prediccion.</div>
+        <pre class="result" id="etaResult">Aun no hay prediccion.</pre>
       </article>
     </section>
 
-    <section class="stack reveal delay-3">
-      <h2>Arquitectura del Proyecto</h2>
-      <div class="stack-cards">
-        <article>
-          <h3>Data Layer</h3>
-          <p>PostgreSQL para ordenes, GPS, entregas y predicciones.</p>
-        </article>
-        <article>
-          <h3>ML Layer</h3>
-          <p>Modelos ETA y riesgo de atraso entrenados sobre datos simulados.</p>
-        </article>
-        <article>
-          <h3>Ops Layer</h3>
-          <p>CI/CD, Docker y despliegue en Railway con endpoint publico.</p>
-        </article>
+    <section class="card reveal delay-4">
+      <div class="card-header">
+        <h3>Ultimas Ordenes</h3>
+        <button class="ghost-btn" id="btnRefreshTable">Refrescar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Estado</th>
+              <th>Creada</th>
+              <th>Peso</th>
+              <th>ETA</th>
+              <th>Riesgo</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody"></tbody>
+        </table>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>Proyecto portfolio de Ronald Piedrahita</p>
-  </footer>
+  <footer class="footer">Portfolio Data Science | Ronald Piedrahita</footer>
 
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="/static/app.js" defer></script>
 </body>
 </html>
